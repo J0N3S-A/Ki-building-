@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع تعليمي تفاعلي: خوارزمية الاختيار</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #4caf50;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        p {
+            color: #aaa;
+            text-align: center;
+            max-width: 500px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        /* المسرح متجاوب الآن مع الهواتف */
+        .stage {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            height: 220px;
+            background: #1e1e1e;
+            border-radius: 15px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 15px 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        /* حاوية الكرات تحافظ على مسافات ثابتة للحركة */
+        .balls-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .ball-wrapper {
+            width: 11%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .ball {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #555, #222);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            position: absolute;
+            bottom: 0;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        @media (max-width: 480px) {
+            .ball { width: 34px; height: 34px; font-size: 0.85rem; }
+            .stage { height: 190px; }
+            .bot { font-size: 1.8rem !important; bottom: 65px !important; }
+        }
+
+        /* إضاءة الألوان */
+        .ball.active-min {
+            box-shadow: 0 0 15px #ff3333;
+            background: radial-gradient(circle at 30% 30%, #ff6666, #990000);
+        }
+
+        .ball.active-move {
+            box-shadow: 0 0 15px #9933ff;
+            background: radial-gradient(circle at 30% 30%, #b366ff, #5900b3);
+        }
+
+        .ball.sorted {
+            background: radial-gradient(circle at 30% 30%, #66ff66, #006600);
+            box-shadow: 0 4px 10px rgba(0,255,0,0.2);
+        }
+
+        /* الروبوتات / الدمى */
+        .bot {
+            position: absolute;
+            font-size: 2.3rem;
+            transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            bottom: 75px;
+            z-index: 10;
+            transform: translateX(-50%);
+        }
+
+        #red-bot {
+            color: #ff3333;
+            text-shadow: 0 0 10px rgba(255,51,51,0.5);
+        }
+
+        #purple-bot {
+            color: #9933ff;
+            text-shadow: 0 0 10px rgba(153,51,255,0.5);
+        }
+
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-start { background-color: #4caf50; color: white; }
+        .btn-start:hover { background-color: #45a049; }
+        .btn-reset { background-color: #333; color: white; border: 1px solid #444; }
+        .btn-reset:hover { background-color: #444; }
+        button:disabled { background-color: #222; color: #555; border: none; cursor: not-allowed; }
+
+        .status-box {
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #00e6ff;
+            text-align: center;
+            min-height: 40px;
+            max-width: 90%;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ترتيب الاختيار الذكي 🤖</h1>
+    <p>شاهد كيف يعمل الذكاء البرمجي: الدمية الحمراء 🔴 تحدد الأصغر، والدمية البنفسجية 🟣 تفحص وتحرك الكرات بالصوت والأنيميشن!</p>
+
+    <div class="status-box" id="status">اضغط على "ابدأ الترتيب" لبدء التجربة الصوتية المرئية!</div>
+
+    <div class="stage">
+        <div id="red-bot" class="bot">🤖🔴</div>
+        <div id="purple-bot" class="bot">🤖🟣</div>
+
+        <div class="balls-container" id="ballsContainer"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-start" id="startBtn" onclick="startSorting()">ابدأ الترتيب</button>
+        <button class="btn-reset" id="resetBtn" onclick="resetArray()">أرقام جديدة</button>
+    </div>
+
+    <script>
+        let array = [];
+        let ballElements = [];
+        const container = document.getElementById('ballsContainer');
+        const redBot = document.getElementById('red-bot');
+        const purpleBot = document.getElementById('purple-bot');
+        const statusText = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // سياق توليد الصوت برمجياً بدون ملفات
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // دالة إطلاق الصوت البسيط جداً
+        function playTone(freq, type, duration) {
+            try {
+                initAudio();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) { console.log("Audio play blocked"); }
+        }
+
+        function playSearchSound() { playTone(600, 'sine', 0.1); }   // صوت البنفسجي الخفيف
+        function playDecisionSound() { playTone(350, 'triangle', 0.4); } // صوت الأحمر الممتد عند القرار
+
+        function generateUniqueNumbers() {
+            let nums = new Set();
+            while(nums.size < 8) {
+                nums.add(Math.floor(Math.random() * 90) + 10);
+            }
+            return Array.from(nums);
+        }
+
+        function resetArray() {
+            array = generateUniqueNumbers();
+            container.innerHTML = '';
+            ballElements = [];
+            statusText.innerText = "تم توليد أرقام جديدة. جاهز للبدء!";
+            startBtn.disabled = false;
+
+            array.forEach((val, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'ball-wrapper';
+                wrapper.id = `wrapper-${index}`;
+
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.id = `ball-${index}`;
+                ball.innerText = val;
+                
+                wrapper.appendChild(ball);
+                container.appendChild(wrapper);
+                ballElements.push(ball);
+            });
+
+            setTimeout(() => {
+                positionBot(redBot, 0);
+                positionBot(purpleBot, 1);
+            }, 100);
+        }
+
+        function positionBot(bot, index) {
+            const wrapper = document.getElementById(`wrapper-${index}`);
+            if (wrapper) {
+                const leftPos = wrapper.offsetLeft + (wrapper.offsetWidth / 2);
+                bot.style.left = `${leftPos}px`;
+            }
+        }
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        // أنيميشن حركة تبديل الكرات الحقيقي (تتحرك الكرات لتبديل المواقع بصرياً)
+        async function swapBallsVisual(idx1, idx2) {
+            const ball1 = ballElements[idx1];
+            const ball2 = ballElements[idx2];
+            
+            const wrapper1 = document.getElementById(`wrapper-${idx1}`);
+            const wrapper2 = document.getElementById(`wrapper-${idx2}`);
+            
+            const distance = wrapper2.offsetLeft - wrapper1.offsetLeft;
+
+            // رفع الكرات للأعلى وانزلاقها أفقياً للتبديل
+            ball1.style.transform = `translate(${distance}px, -30px)`;
+            ball2.style.transform = `translate(${-distance}px, -30px)`;
+
+            playDecisionSound(); // إطلاق صوت التبديل والقرار للأحمر
+            await sleep(600);
+
+            // إعادة تعيين الموضع بعد مبادلة محتوى الكرات الفعلي
+            ball1.style.transition = 'none';
+            ball2.style.transition = 'none';
+            ball1.style.transform = 'none';
+            ball2.style.transform = 'none';
+
+            let tempText = ball1.innerText;
+            ball1.innerText = ball2.innerText;
+            ball2.innerText = tempText;
+
+            // استعادة خصائص الـ Transition
+            setTimeout(() => {
+                ball1.style.transition = '';
+                ball2.style.transition = '';
+            }, 50);
+        }
+
+        async function startSorting() {
+            initAudio();
+            startBtn.disabled = true;
+            resetBtn.disabled = true;
+            let n = array.length;
+
+            for (let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                statusText.innerText = `الدمية الحمراء تفترض أن أصغر رقم حالياً هو ${array[minIdx]}`;
+                positionBot(redBot, minIdx);
+                ballElements[minIdx].classList.add('active-min');
+                await sleep(1000);
+
+                for (let j = i + 1; j < n; j++) {
+                    statusText.innerText = `الدمية البنفسجية تفحص الرقم ${array[j]}`;
+                    positionBot(purpleBot, j);
+                    ballElements[j].classList.add('active-move');
+                    
+                    playSearchSound(); // صوت فحص الكرة البنفسجية
+                    await sleep(700);
+
+                    if (array[j] < array[minIdx]) {
+                        ballElements[minIdx].classList.remove('active-min');
+                        minIdx = j;
+                        statusText.innerText = `الدمية الحمراء قررت تغيير الاختيار إلى الأصغر: ${array[minIdx]}`;
+                        positionBot(redBot, minIdx);
+                        ballElements[minIdx].classList.add('active-min');
+                        await sleep(900);
+                    }
+                    ballElements[j].classList.remove('active-move');
+                }
+
+                if (minIdx !== i) {
+                    statusText.innerText = `أداء الأمر: تبديل ${array[i]} مع ${array[minIdx]}`;
+                    await swapBallsVisual(i, minIdx);
+
+                    let temp = array[i];
+                    array[i] = array[minIdx];
+                    array[minIdx] = temp;
+                }
+
+                ballElements[minIdx].classList.remove('active-min');
+                ballElements[i].classList.add('sorted');
+                await sleep(600);
+            }
+            
+            ballElements[n-1].classList.add('sorted');
+            statusText.innerText = "رائع! تم إتمام الترتيب بنجاح خطوة بخطوة! 🎉";
+            resetBtn.disabled = false;
+        }
+
+        window.onload = resetArray;
+    </script>
+</body>
+</html>
