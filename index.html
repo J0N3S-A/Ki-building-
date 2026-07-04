@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="de" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع تعليمي تفاعلي: خوارزمية الاختيار</title>
+    <title>Interaktive Lernseite: Selection Sort Algorithmus</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,7 +35,6 @@
             margin-bottom: 20px;
         }
 
-        /* المسرح متجاوب الآن مع الهواتف */
         .stage {
             position: relative;
             width: 100%;
@@ -52,7 +51,6 @@
             box-sizing: border-box;
         }
 
-        /* حاوية الكرات تحافظ على مسافات ثابتة للحركة */
         .balls-container {
             position: relative;
             width: 100%;
@@ -92,7 +90,6 @@
             .bot { font-size: 1.8rem !important; bottom: 65px !important; }
         }
 
-        /* إضاءة الألوان */
         .ball.active-min {
             box-shadow: 0 0 15px #ff3333;
             background: radial-gradient(circle at 30% 30%, #ff6666, #990000);
@@ -108,7 +105,6 @@
             box-shadow: 0 4px 10px rgba(0,255,0,0.2);
         }
 
-        /* الروبوتات / الدمى */
         .bot {
             position: absolute;
             font-size: 2.3rem;
@@ -133,7 +129,7 @@
             display: flex;
             gap: 10px;
             width: 100%;
-            max-width: 400px;
+            max-width: 430px;
         }
 
         button {
@@ -166,10 +162,10 @@
 </head>
 <body>
 
-    <h1>ترتيب الاختيار الذكي 🤖</h1>
-    <p>شاهد كيف يعمل الذكاء البرمجي: الدمية الحمراء 🔴 تحدد الأصغر، والدمية البنفسجية 🟣 تفحص وتحرك الكرات بالصوت والأنيميشن!</p>
+    <h1>Intelligente Sortierung (Selection Sort) 🤖</h1>
+    <p>Erleben Sie, wie algorithmische Logik funktioniert: Der rote Bot 🔴 findet das Minimum, und der lila Bot 🟣 prüft und bewegt die Kugeln mit Sound!</p>
 
-    <div class="status-box" id="status">اضغط على "ابدأ الترتيب" لبدء التجربة الصوتية المرئية!</div>
+    <div class="status-box" id="status">Klicken Sie auf "Sortierung starten", um das Experiment zu beginnen!</div>
 
     <div class="stage">
         <div id="red-bot" class="bot">🤖🔴</div>
@@ -179,8 +175,8 @@
     </div>
 
     <div class="controls">
-        <button class="btn-start" id="startBtn" onclick="startSorting()">ابدأ الترتيب</button>
-        <button class="btn-reset" id="resetBtn" onclick="resetArray()">أرقام جديدة</button>
+        <button class="btn-start" id="startBtn" onclick="startSorting()">Sortierung starten</button>
+        <button class="btn-reset" id="resetBtn" onclick="resetArray()">Neue Zahlen</button>
     </div>
 
     <script>
@@ -193,36 +189,13 @@
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
 
-        // سياق توليد الصوت برمجياً بدون ملفات
-        let audioCtx = null;
+        const purpleSound = new Audio('purple.mp3');
+        const redSound = new Audio('red.mp3');
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+        function playSound(audioObject) {
+            audioObject.currentTime = 0;
+            audioObject.play().catch(e => console.log("Audio play blocked"));
         }
-
-        // دالة إطلاق الصوت البسيط جداً
-        function playTone(freq, type, duration) {
-            try {
-                initAudio();
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) { console.log("Audio play blocked"); }
-        }
-
-        function playSearchSound() { playTone(600, 'sine', 0.1); }   // صوت البنفسجي الخفيف
-        function playDecisionSound() { playTone(350, 'triangle', 0.4); } // صوت الأحمر الممتد عند القرار
 
         function generateUniqueNumbers() {
             let nums = new Set();
@@ -236,7 +209,7 @@
             array = generateUniqueNumbers();
             container.innerHTML = '';
             ballElements = [];
-            statusText.innerText = "تم توليد أرقام جديدة. جاهز للبدء!";
+            statusText.innerText = "Neue Zahlen generiert. Bereit zum Starten!";
             startBtn.disabled = false;
 
             array.forEach((val, index) => {
@@ -270,7 +243,6 @@
 
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        // أنيميشن حركة تبديل الكرات الحقيقي (تتحرك الكرات لتبديل المواقع بصرياً)
         async function swapBallsVisual(idx1, idx2) {
             const ball1 = ballElements[idx1];
             const ball2 = ballElements[idx2];
@@ -280,14 +252,12 @@
             
             const distance = wrapper2.offsetLeft - wrapper1.offsetLeft;
 
-            // رفع الكرات للأعلى وانزلاقها أفقياً للتبديل
             ball1.style.transform = `translate(${distance}px, -30px)`;
             ball2.style.transform = `translate(${-distance}px, -30px)`;
 
-            playDecisionSound(); // إطلاق صوت التبديل والقرار للأحمر
+            playSound(redSound);
             await sleep(600);
 
-            // إعادة تعيين الموضع بعد مبادلة محتوى الكرات الفعلي
             ball1.style.transition = 'none';
             ball2.style.transition = 'none';
             ball1.style.transform = 'none';
@@ -297,7 +267,6 @@
             ball1.innerText = ball2.innerText;
             ball2.innerText = tempText;
 
-            // استعادة خصائص الـ Transition
             setTimeout(() => {
                 ball1.style.transition = '';
                 ball2.style.transition = '';
@@ -305,30 +274,29 @@
         }
 
         async function startSorting() {
-            initAudio();
             startBtn.disabled = true;
             resetBtn.disabled = true;
             let n = array.length;
 
             for (let i = 0; i < n - 1; i++) {
                 let minIdx = i;
-                statusText.innerText = `الدمية الحمراء تفترض أن أصغر رقم حالياً هو ${array[minIdx]}`;
+                statusText.innerText = `Der rote Bot nimmt an, dass die kleinste Zahl aktuell ${array[minIdx]} ist.`;
                 positionBot(redBot, minIdx);
                 ballElements[minIdx].classList.add('active-min');
                 await sleep(1000);
 
                 for (let j = i + 1; j < n; j++) {
-                    statusText.innerText = `الدمية البنفسجية تفحص الرقم ${array[j]}`;
+                    statusText.innerText = `Der lila Bot prüft die Zahl ${array[j]}.`;
                     positionBot(purpleBot, j);
                     ballElements[j].classList.add('active-move');
                     
-                    playSearchSound(); // صوت فحص الكرة البنفسجية
+                    playSound(purpleSound);
                     await sleep(700);
 
                     if (array[j] < array[minIdx]) {
                         ballElements[minIdx].classList.remove('active-min');
                         minIdx = j;
-                        statusText.innerText = `الدمية الحمراء قررت تغيير الاختيار إلى الأصغر: ${array[minIdx]}`;
+                        statusText.innerText = `Der rote Bot hat eine kleinere Zahl gefunden: ${array[minIdx]}!`;
                         positionBot(redBot, minIdx);
                         ballElements[minIdx].classList.add('active-min');
                         await sleep(900);
@@ -337,7 +305,7 @@
                 }
 
                 if (minIdx !== i) {
-                    statusText.innerText = `أداء الأمر: تبديل ${array[i]} مع ${array[minIdx]}`;
+                    statusText.innerText = `Befehl ausgeführt: Tausche ${array[i]} mit ${array[minIdx]}.`;
                     await swapBallsVisual(i, minIdx);
 
                     let temp = array[i];
@@ -351,7 +319,7 @@
             }
             
             ballElements[n-1].classList.add('sorted');
-            statusText.innerText = "رائع! تم إتمام الترتيب بنجاح خطوة بخطوة! 🎉";
+            statusText.innerText = "Ausgezeichnet! Die Sortierung wurde Schritt für Schritt erfolgreich abgeschlossen! 🎉";
             resetBtn.disabled = false;
         }
 
